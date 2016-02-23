@@ -178,10 +178,16 @@ module PaperTrail
     # Wrap the following methods in a module so we can include them only in the
     # ActiveRecord models that declare `has_paper_trail`.
     module InstanceMethods
-      # Returns true if this instance is the current, live one;
-      # returns false if this instance came from a previous version.
+      def paper_trail
+        ::PaperTrail::RecordTrail.new(self)
+      end
+
       def live?
-        source_version.nil?
+        ::ActiveSupport::Deprecation.warn(
+          "Deprecated: use paper_trail.live? instead of live?",
+          caller(1)
+        )
+        paper_trail.live?
       end
 
       # Returns who put the object into its current state.
@@ -198,6 +204,10 @@ module PaperTrail
       # for changes that never actually took place
       def clear_rolled_back_versions
         send(self.class.versions_association_name).reload
+      end
+
+      def source_version
+        send self.class.version_association_name
       end
 
       # Returns the object (not a Version) as it was at the given timestamp.
@@ -300,10 +310,6 @@ module PaperTrail
         on.nil? || on.include?(:update)
       end
 
-      def source_version
-        send self.class.version_association_name
-      end
-
       def record_create
         if paper_trail_switched_on?
           data = {
@@ -399,7 +405,7 @@ module PaperTrail
       # Invoked via callback when a user attempts to persist a reified
       # `Version`.
       def reset_timestamp_attrs_for_update_if_needed!
-        return if live?
+        return if paper_trail.live?
         timestamp_attributes_for_update_in_model.each do |column|
           # ActiveRecord 4.2 deprecated `reset_column!` in favor of
           # `restore_column!`.

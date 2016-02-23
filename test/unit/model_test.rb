@@ -242,7 +242,7 @@ class HasPaperTrailModelTest < ActiveSupport::TestCase
     end
 
     should "be live" do
-      assert @widget.live?
+      assert @widget.paper_trail.live?
     end
 
     context "which is then created" do
@@ -262,7 +262,7 @@ class HasPaperTrailModelTest < ActiveSupport::TestCase
       end
 
       should "be live" do
-        assert @widget.live?
+        assert @widget.paper_trail.live?
       end
 
       should "use the widget `updated_at` as the version's `created_at`" do
@@ -317,7 +317,9 @@ class HasPaperTrailModelTest < ActiveSupport::TestCase
         end
 
         should "have versions that are not live" do
-          assert @widget.versions.map(&:reify).compact.all? { |w| !w.live? }
+          assert @widget.versions.map(&:reify).compact.all? { |w|
+            !w.paper_trail.live?
+          }
         end
 
         should "have stored changes" do

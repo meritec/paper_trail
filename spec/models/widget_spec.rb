@@ -64,11 +64,11 @@ describe Widget, type: :model do
 
       subject { widget.versions.last.reify }
 
-      it { expect(subject).not_to be_live }
+      it { expect(subject.paper_trail).not_to be_live }
 
       it "should clear the `versions_association_name` virtual attribute" do
         subject.save!
-        expect(subject).to be_live
+        expect(subject.paper_trail).to be_live
       end
 
       it "corresponding version should use the widget updated_at" do
@@ -133,7 +133,7 @@ describe Widget, type: :model do
           before { PaperTrail.whodunnit = orig_name }
 
           context "accessed from live model instance" do
-            specify { expect(widget).to be_live }
+            specify { expect(widget.paper_trail).to be_live }
 
             it "should return the originator for the model at a given state" do
               expect(widget.paper_trail_originator).to eq(orig_name)
